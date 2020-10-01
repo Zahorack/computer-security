@@ -1,0 +1,62 @@
+Lecture 2 - Threat modeling [28.9.2020]
+
+# Attack
+Not allowed interaction with system, which cause a damage or enable another attacks.
+	Hardware
+	Software
+	
+-use computional resources
+-data leaking
+-distributed attack
+
+# Secure system development
+-disable possibilities for attackers
+
+
+
+
+# Threat modeling
+
+//Book - Adam Shostack: Threat modeling, designing for security
+
+Rule 1: Threat identification in design stage of system development process
+-cheaper
+-scalability
+-efectivity
+-user distrubition
+
+Process:
+ define model - what are you building?
+ find threats - what can go wrong with it once you build it?
+ handle threats
+ system validation
+
+
+Strategies
+ [ ] Brainstorming
+ [ ] Expertise
+ [ ] Protocols/Norms
+ [ ] Attack trees
+ [ ] Data flow diagrams
+
+ STRIDE metodika ???
+
+Impacts
+
+ Spoofing - mis-authorization of attacker
+ Tampering - neopravnena manipulacia s datami, pamatou, sietou.
+ Repudiation
+ Information Disclousure - neopravneny pristup k datam
+ DoS - Denial of service
+
+
+Handling threats
+ Tracking
+ Mitigate
+ Eliminate
+ Transfer
+ Accept
+
+
+
+ 
