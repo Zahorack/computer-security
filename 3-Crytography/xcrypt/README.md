@@ -10,7 +10,7 @@ nahodnych klucov.
 ## Opis aplikacie
 Aplikacia je implmentovana v jazyku python. Na sifrovanie suborov som vyuzil 
 Advanced Encryption Standard (AES) konkretne mod MODE_CBC (Cipher Blocker Chaining). Ktory vyuziva 
-okrem `32 bitoveho kluca` aj `inicializacny vektor`, ktory je pred encryptovani ulozeny v hlavicke suboru.
+okrem `256 bitoveho kluca` aj `inicializacny vektor`, ktory je pred encryptovani ulozeny v hlavicke suboru.
 Tento sifrovaci standart je velmi bezpecny a tazko decriptovatelny bez poznania kluca, preto je odporucany.
 V hlavicke suboru je este ulozena velkost suboru, kvoli tomu ze pri dekriptovani budeme potrebovat 
 vediet velkost originalneho suboru kvoli orezaniu paddingu. Padding je pri AES.block_size rovny 16.
