@@ -1,26 +1,36 @@
-# xcrypt - aplikácie na šifrovanie súborov
+# xcrypt - aplikácia na šifrovanie a dešifrovanie s využitím RSA a kontroly integrity
 
-Aplikácia umožní šifrovat a dešifrovat súbory symetrickým klucom.
 
 ## Third part API
 Aplikacia je postavena na sifrovacom python baliku `Cryptodome`. Ktory je nastavbou nad 
-osvedcenym `PyCrypto` packagom. Obsahuje bezpecne sifrovacie funkcie a implmentacie generatorov
+osvedcenym `PyCrypto` packagom. Obsahuje bezpecne sifrovacie funkcie a korektn0 implmentacie generatorov
 nahodnych klucov.
 
 ## Opis aplikacie
-Aplikacia je implmentovana v jazyku python. Na sifrovanie suborov som vyuzil 
-Advanced Encryption Standard (AES) konkretne mod MODE_CBC (Cipher Blocker Chaining). Ktory vyuziva 
-okrem `32 bitoveho kluca` aj `inicializacny vektor`, ktory je pred encryptovani ulozeny v hlavicke suboru.
-Tento sifrovaci standart je velmi bezpecny a tazko decriptovatelny bez poznania kluca, preto je odporucany.
-V hlavicke suboru je este ulozena velkost suboru, kvoli tomu ze pri dekriptovani budeme potrebovat 
-vediet velkost originalneho suboru kvoli orezaniu paddingu. Padding je pri AES.block_size rovny 16.
+Aplikacia je implmentovana v jazyku python. Na sifrovanie suborov - SESSION KEY som vyuzil 
+Advanced Encryption Standard (AES) konkretne mod MODE_GCM (Galois/Counter Mode). AES GCM vyuziva na šifrovanie
+`256 bitový kluc` aj `nonce - inicializacny vektor`. Tento sifrovaci standart som použil preto lebo je velmi bezpecny.
+
+Aplikácia implementuje aj kontrolu integrity dat pomocov MAC modu. Tato funkcionalita odhali ak bol 
+subor modifikovany pocas prenosu a to vdaka HASH vysledku (tag), ktory sa musi rovnat ako pre poslany tak aj pre prijaty
+obsah dat. Tento tag je ulozeny na konci spravy/suboru. Ak MAC tag cerifikacia nie je spravna prijimatel moze vyziadat
+o novu spravu alebo a staru dropnut.
+
+Posielanie zasifrovanych dat je realizovane cez bezpecny kanal pomocou asymetrickeho RSA algortimu.
+Tento princip vyuziva par klucov - sukromny a verejny. Pricom verejny kluc poznaju obe strany komunikacie ale sukromny
+kluc pozna len prijimatel. Odosielatel spravy zasifruje session key (256bit AES) pomocou verejneho kluca a ulozi do 
+hlavicky spravy alebo suboru. Prijimatel musi pred desiforvanim dat desifrovat session key pomocou svojho privatneho kluca.
+Potom moze desifrovat data cez session key.
+
+Bonus: 
+Ukladanie z hlavicky a do hlavicky riesim sam ako je vyzadovane. Pouzivam AES GCM sifrovanie a MAC kontrolu integrity.
 
 
 Format zasifrovaneho suboru:
 ````
  ___________________________________
 |                                   |
-|             File size             |
+|     RSA encrypted Session key     |
 |___________________________________|
 |                                   |
 |        Initialization vector      |
@@ -32,27 +42,11 @@ Format zasifrovaneho suboru:
                   .
 |                 .                 |
 |___________________________________|
+|               MAC tag             |
+|___________________________________|
 
 ````
 
-### Rychlost sifrovania:
-Na testovanie rychlosti som pouzil subor archivovany subor s velkostou 998 MB.
-````
-$ python main.py --encode ctf8.zip ctf8.enc
-
-File has size:  998558948
-Crypting time:  0:00:02.654827
-````
-
-````
-$ python main.py --decode ctf8.enc ctf8_new.zip
-
-File has size:  998558984
-Crypting time:  0:00:02.027342
-````
-
-Teda cas sifrovania je pre 1Gb subor priblizne 2.5 sekundy. Kvoli velkosti suboru su data
-citane postupne a sifrovane po castiach.
 
 ### Uzivatelsky manual
 
@@ -66,17 +60,24 @@ Automaticke nainstalovanie vsetkych dependecies:
 pip install -r requirements.txt
 ````
 
-Priklad pouzitia:
+### Priklad pouzitia:
+Generovanie noveho paru RSA klucov
 ````
-$ python main.py --encode <input_file_name>
+$ python xcrypt.py --generate <optional_key_name>
 ````
 
+Sifrovanie robi odosilatel vyuzitim verejneho kluca prijimatela
 ````
-$ python main.py --decode <input_file_name> <key_file_name>
+$ python xcrypt.py --encrypt <rsa_public_key_file> <input_file_name> <optional_out_file_name>
+````
+
+Desifrovanie robi prijimatel vyuzitim svojho privatneho kluca
+````
+$ python xcrypt.py --decrypt <rsa_private_key_file> <input_file_name> <optional_out_file_name>
 ````
 
 Ak sa aplikacia pusti bez vstupnych argumentov z CLI, uzivatel bude dodatocne poziadany o 
-nazov suboru a metodu sifrovania. Po uspesnom ukonceni operacie sifrovania bude uzivatel moct rozhodnut ci sa 
+nazov suborov a metodu sifrovania. Po uspesnom ukonceni operacie sifrovania bude uzivatel moct rozhodnut ci sa 
 stary subor vymaze.
 
 Priklad vystupu:
@@ -96,5 +97,24 @@ zadania vstupnych parametrov.
 
 
 ### Odporucania
-Aplikacia po encriptovani ulozi pouzity nahodne vygenerovany kluc do samotneho suboru `key.bin`. Tento subor
-je potrebne uchovat a bezpecne ulozit aby mohol byt pouzity pri desifrovani.
+Je velmi dolezite bezpecne uchovat a nezverejnovat sukromny RSA kluc.
+
+### Testovanie aplikacie
+V priecinku sa nachadzaju testovacie vygenerovane RSA kluce (rsa_key_private.pem, rsa_key_public.pem), 
+vstupny subor test.orig ktory budeme sifrovat.
+
+Generovanie novych klucov
+````
+$ python xcrypt.py --generate 
+````
+
+Sifrovanie testovacich suborov
+````
+$ python xcrypt.py --encrypt rsa_key_public.pem test.orig
+````
+
+Desifrovanie testovacieho suboru
+````
+$ python xcrypt.py --decrypt rsa_key_private.pem test.enc
+````
+
