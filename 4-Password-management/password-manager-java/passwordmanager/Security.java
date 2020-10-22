@@ -1,6 +1,5 @@
 package passwordmanager;
 
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -13,7 +12,9 @@ public class Security {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(salt);
+
             byte[] bytes = md.digest(passwordToHash.getBytes());
+
             StringBuilder sb = new StringBuilder();
             for(int i=0; i< bytes.length ;i++)
             {
@@ -43,6 +44,14 @@ public class Security {
                 return  true;
         }
         return false;
+    }
+
+    public static boolean validatePasswordStrength(String password) {
+        if (password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.{8,}).+$")) {
+            return true;
+        }
+
+        return  false;
     }
 }
 
