@@ -1,8 +1,5 @@
 package passwordmanager;
 
-import java.io.IOException;
-import java.util.StringTokenizer;
-
 import passwordmanager.Database.MyResult;
 
 public class Login {
@@ -16,8 +13,6 @@ public class Login {
                 sessionResult[0] = authentication(meno, heslo);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -27,18 +22,15 @@ public class Login {
         return sessionResult[0];
     }
 
-    protected static MyResult authentication(String meno, String heslo) throws IOException, Exception{
+    protected static MyResult authentication(String meno, String heslo) {
 
-        MyResult account = Database.find("shadow", meno);
-        if (!account.getFirst()){
+        SqlDatabase.UserRecord user = Database.find(meno);
+        if (!user.isValid()){
             return new MyResult(false, "Nespravne meno.");
         }
         else {
-            StringTokenizer st = new StringTokenizer(account.getSecond(), ":");
-            st.nextToken();      //prvy token je prihlasovacie meno
-
-            String hashed_pass = st.nextToken();
-            byte[] salt = hexStringToByteArray(st.nextToken());
+            String hashed_pass = user.getHash();
+            byte[] salt = hexStringToByteArray(user.getSalt());
 
             if (!Security.check(hashed_pass, heslo, salt))
                 return new MyResult(false, "Nespravne heslo.");

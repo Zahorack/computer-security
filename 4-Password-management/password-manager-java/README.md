@@ -34,11 +34,12 @@ V pripade nesplenia bezpecnostnych poziadaviek vypise sa chybova hlaska: `Heslo 
 
 
 ### Databaza hesiel
-Zahashovane hesla, pristupove mena a salty su ulozene v databaze (subore) `shadow`.
+Zahashovane hesla, pristupove mena a salty su ulozene v sqlite databaze `shadow.db`. Pristup k databaze je implementovany
+cez standartne `java.sql` funkcie a driver je JBDC `sqlite-jdbc-3.32.3.2.jar`
 Format je nasledovny:
 
 ``
-<name>:<hashed_password>:<salt>
+name [TEXT]   |   hash [TEXT]   |   salt [TEXT]
 ``
 
 ### Implementacne detaily

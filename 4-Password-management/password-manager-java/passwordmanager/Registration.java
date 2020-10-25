@@ -1,13 +1,11 @@
 package passwordmanager;
 
-import java.security.NoSuchAlgorithmException;
-
 import passwordmanager.Database.MyResult;
 
 
 public class Registration {
-    protected static MyResult registracia(String meno, String heslo) throws NoSuchAlgorithmException, Exception{
-        if (Database.exist("shadow", meno)){
+    protected static MyResult registracia(String meno, String heslo) throws Exception{
+        if (Database.exist(meno)){
             System.out.println("Meno je uz zabrate.");
             return new MyResult(false, "Meno je uz zabrate.");
         }
@@ -23,7 +21,7 @@ public class Registration {
                 sb.append(String.format("%02X", b));
             }
 
-            Database.add("shadow", meno + ":" + Security.hash(heslo, salt) + ':'+ sb.toString());
+            Database.add(meno, Security.hash(heslo, salt), sb.toString());
         }
         return new MyResult(true, "");
     }
