@@ -1,5 +1,12 @@
 package passwordmanager;
 
+import org.passay.*;
+import org.passay.dictionary.WordListDictionary;
+import org.passay.dictionary.WordLists;
+import org.passay.dictionary.sort.ArraysSort;
+
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -14,10 +21,8 @@ public class Security {
             md.update(salt);
 
             byte[] bytes = md.digest(passwordToHash.getBytes());
-
             StringBuilder sb = new StringBuilder();
-            for(int i=0; i< bytes.length ;i++)
-            {
+            for(int i=0; i< bytes.length; i++) {
                 sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
             }
             generatedPassword = sb.toString();
@@ -46,8 +51,33 @@ public class Security {
         return false;
     }
 
-    public static boolean validatePasswordStrength(String password) {
-        if (password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.{8,}).+$")) {
+    public static boolean validatePasswordStrength(String password) throws IOException {
+
+        CharacterCharacteristicsRule characterCharacteristicsRule = new CharacterCharacteristicsRule(
+                3,
+                new CharacterRule(EnglishCharacterData.LowerCase, 1),
+                new CharacterRule(EnglishCharacterData.UpperCase, 1),
+                new CharacterRule(EnglishCharacterData.Digit,1),
+                new CharacterRule(EnglishCharacterData.Special,1)
+        );
+
+        DictionaryRule dictionaryRule = new DictionaryRule(
+                new WordListDictionary(WordLists.createFromReader(
+                new FileReader[] {new FileReader("banned-passwords.txt")},
+                false,
+                new ArraysSort()))
+        );
+
+        PasswordValidator passwordValidator = new PasswordValidator(
+                new LengthRule(8, 24),
+                characterCharacteristicsRule,
+                new WhitespaceRule(),
+                dictionaryRule
+        );
+
+        RuleResult validate = passwordValidator.validate(new PasswordData(password));
+
+        if(validate.isValid()) {
             return true;
         }
 

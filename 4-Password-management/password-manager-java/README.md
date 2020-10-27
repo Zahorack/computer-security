@@ -18,17 +18,36 @@ Aby sme pri DOD utoku nezahltili resources, kazda Login session je pustana v nov
 
 ### Secure password requirements
 Aplikacia vyzaduje pri registracii zadat heslo, ktore splna poziadacky na bezpecnostne standarty. Konkretne
-heslo musi obsahovat male a velke pismena, cisla.
-```
-public static boolean validatePasswordStrength(String password) {
-    if (password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.{8,}).+$")) {
-        return true;
-    }
+heslo musi obsahovat male a velke pismena, cisla, musi mat minimalnu dlzku a nesmie sa heslo nacahdzat v 
+slovniku slabych hesiel. Implmentácia v java vyuziva package `passay`.
 
-    return  false;
-}
+
+```
+        CharacterCharacteristicsRule characterCharacteristicsRule = new CharacterCharacteristicsRule(
+                3,
+                new CharacterRule(EnglishCharacterData.LowerCase, 1),
+                new CharacterRule(EnglishCharacterData.UpperCase, 1),
+                new CharacterRule(EnglishCharacterData.Digit,1),
+                new CharacterRule(EnglishCharacterData.Special,1)
+        );
+
+        DictionaryRule dictionaryRule = new DictionaryRule(
+                new WordListDictionary(WordLists.createFromReader(
+                new FileReader[] {new FileReader("banned-passwords.txt")},
+                false,
+                new ArraysSort()))
+        );
+
+        PasswordValidator passwordValidator = new PasswordValidator(
+                new LengthRule(8, 24),
+                characterCharacteristicsRule,
+                new WhitespaceRule(),
+                dictionaryRule
+        );
 ```
 
+
+Poziadavky na heslo su zverejnene v dialogovom okne pri registracii a vybere hesla.
 V pripade nesplenia bezpecnostnych poziadaviek vypise sa chybova hlaska: `Heslo je slabe! Neuspesna registracia`.
 
 
@@ -38,6 +57,7 @@ Zahashovane hesla, pristupove mena a salty su ulozene v sqlite databaze `shadow.
 cez standartne `java.sql` funkcie a driver je JBDC `sqlite-jdbc-3.32.3.2.jar`
 Format je nasledovny:
 
+
 ``
 name [TEXT]   |   hash [TEXT]   |   salt [TEXT]
 ``
@@ -46,6 +66,7 @@ name [TEXT]   |   hash [TEXT]   |   salt [TEXT]
 V aplikacii je pouzity Java package `MessageDigest` na HASH funkcie. Na generovanie nahodnych SALT klucov je pouzity
 package `SecureRandom`. Mal som problem s ulozenim SALT byetoveho pola do subora spolu so stringami pre meno a zahashovane heslo.
 Vyriesil som to tak, ze byte pole SALTu najprv prekonvertujem na pole HEX znakov
+
 
 ```
     byte[] salt = Security.getSalt();
@@ -58,9 +79,7 @@ Vyriesil som to tak, ze byte pole SALTu najprv prekonvertujem na pole HEX znakov
 
 Takto ulozeny salt mozme znovu nacitat bezpecne ako string a prekonvertovat nazad na pole bytov.
 
-
 ```
-
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -83,6 +102,7 @@ root:32683dce088fa3324502d15393787c2ba47500b51dbdd6ba2bda6d32e07b2174:26C5FD00C6
 Aplikacia disponuje Grafickym uzivatelskym rozhranim GUI s moznostami registracie a prihlasenia.
 
 ## Spustenie aplikacie
+V subore `\out\artifacts\password_manager_src` sa nachadzaju 3 subory `banned-passwords.txt`, `password-manager-src.jar`, `shadow.db`.
 Na spustenie `.jar` executable aplikacie je nutne mat nainstalovany JRE alebo kompletny JDK.
 Otestovane na jdk-15.0.1 - `https://www.oracle.com/java/technologies/javase-jdk15-downloads.html`.
 

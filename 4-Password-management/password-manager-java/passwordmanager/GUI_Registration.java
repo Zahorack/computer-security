@@ -156,6 +156,7 @@ public class GUI_Registration extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(rootPane, "Heslo a overenie hesla su rozdielne.");
             } catch (Exception ex) {
                 Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println(ex);
                 JOptionPane.showMessageDialog(rootPane, "Nevyplnene meno.");
             }
         
