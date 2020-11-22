@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
 db = SQLAlchemy()
-
+app = Flask(__name__)
 
 def create_app():
     app = Flask(__name__)
@@ -30,3 +30,7 @@ def create_app():
     app.register_blueprint(main_blueprint)
 
     return app
+
+
+if __name__ == '__main__':
+    app.run()
