@@ -57,3 +57,55 @@ static int secure_function(){
 //
 //    return 0;
 //}
+
+void loop() {
+
+    char angles = 0;
+    char direction = 0;
+    int received = Serial.available();
+    Serial.println("Available: ", received)
+    if(received>0){
+        angles = Serial.read();
+        Serial.read();
+        direction = Serial.read();
+    }
+
+    if(direction == 0) {
+        angles = -1*angles;
+    }
+
+    if(angles !=0 ){
+        stepper.move(angles*3200*50);
+        stepper.runToPosition();
+
+    }
+}
+
+
+
+void loop() {
+
+    char angles = 0;
+    char direction = 0;
+    int received = Serial.available();
+
+    if(received>0){
+        Serial.println(received);
+        angles = Serial.read();
+        Serial.read();
+        direction = Serial.read();
+
+        Serial.println(angles);
+        Serial.println(direction);
+    }
+
+    if(direction == 0) {
+        angles = -1*angles;
+    }
+
+    if(angles !=0 ){
+        stepper.move(angles*3200*50);
+        stepper.runToPosition();
+
+    }
+}
